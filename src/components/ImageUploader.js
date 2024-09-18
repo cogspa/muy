@@ -1,6 +1,6 @@
 // src/components/ImageUploader.js
 
-import React, { useState } from 'react';
+// import React, { useState } from 'react';
 
 function ImageUploader({ onImageLoad }) {
     const handleImageChange = (event) => {
