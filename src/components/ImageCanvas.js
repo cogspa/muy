@@ -13,9 +13,11 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
     const [imageSize, setImageSize] = useState({ width: 0, height: 0 }); // Image size
     const [gridSizeDisplay, setGridSizeDisplay] = useState({ width: 0, height: 0 }); // Grid rectangle size
     const [redBoxSize, setRedBoxSize] = useState({ width: 0, height: 0 }); // Red box size
+    const [dpiMessage, setDpiMessage] = useState(''); // DPI message
 
     const MAX_WIDTH = 800;
     const MAX_HEIGHT = 600;
+    const TARGET_DPI = 72;
 
     useEffect(() => {
         if (!imageSrc) return;
@@ -23,17 +25,32 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
         const img = new Image();
         img.src = imageSrc;
         img.onload = () => {
-            imageRef.current = img;
+            imageRef.current = img; // Ensure the image is fully loaded
 
-            const aspectRatio = img.width / img.height;
+            // Assume the image is either 72 DPI or 300 DPI (for print) for this simulation.
+            const assumedDPI = img.width > MAX_WIDTH ? 300 : 72; // Assume large images are print resolution
             let scaledW = img.width;
             let scaledH = img.height;
 
+            let dpiMessage = `Original DPI assumed: ${assumedDPI} DPI. `;
+            // If the image is not already 72 DPI, convert it to 72 DPI (for display)
+            if (assumedDPI !== TARGET_DPI) {
+                // Simulate DPI conversion: resize the image accordingly
+                const dpiFactor = assumedDPI / TARGET_DPI;
+                scaledW = Math.round(img.width / dpiFactor);
+                scaledH = Math.round(img.height / dpiFactor);
+                dpiMessage += `Converted to 72 DPI. New size: ${scaledW}px x ${scaledH}px.`;
+            } else {
+                dpiMessage += `Image is already 72 DPI.`;
+            }
+            setDpiMessage(dpiMessage);
+
+            // Respect the maximum width and height for the canvas
+            const aspectRatio = scaledW / scaledH;
             if (scaledW > MAX_WIDTH) {
                 scaledW = MAX_WIDTH;
                 scaledH = MAX_WIDTH / aspectRatio;
             }
-
             if (scaledH > MAX_HEIGHT) {
                 scaledH = MAX_HEIGHT;
                 scaledW = MAX_HEIGHT * aspectRatio;
@@ -47,7 +64,7 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
             canvas.width = scaledW;
             canvas.height = scaledH;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0, scaledW, scaledH);
+            ctx.drawImage(img, 0, 0, scaledW, scaledH); // Draw the image only after it's fully loaded
 
             if (definingBox) {
                 drawDefiningBoxAndGrid(ctx);
@@ -152,6 +169,8 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
     };
 
     const drawDefiningBoxAndGrid = (ctx) => {
+        if (!imageRef.current) return; // Ensure image is fully loaded before drawing
+
         ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
         ctx.drawImage(imageRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
 
@@ -179,39 +198,46 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
         }
     };
 
-    // Function to generate the image sequence from the grid
     const generateImageSequence = () => {
         if (!definingBox || !imageRef.current) return;
-
+    
         const cropCanvas = document.createElement('canvas');
         const cropCtx = cropCanvas.getContext('2d');
-
+    
+        // Determine the scale factor between the natural size of the image and its displayed size
+        const scaleX = imageRef.current.naturalWidth / canvasRef.current.width;
+        const scaleY = imageRef.current.naturalHeight / canvasRef.current.height;
+    
         const gridWidth = definingBox.width / gridSize.horizontal;
         const gridHeight = definingBox.height / gridSize.vertical;
         const sequence = [];
-
+    
         for (let row = 0; row < gridSize.vertical; row++) {
             for (let col = 0; col < gridSize.horizontal; col++) {
                 cropCanvas.width = gridWidth;
                 cropCanvas.height = gridHeight;
-
-                const sx = definingBox.x + col * gridWidth;
-                const sy = definingBox.y + row * gridHeight;
-
+    
+                // Adjust cropping coordinates based on scale
+                const sx = (definingBox.x + col * gridWidth) * scaleX;
+                const sy = (definingBox.y + row * gridHeight) * scaleY;
+                const sWidth = gridWidth * scaleX;
+                const sHeight = gridHeight * scaleY;
+    
                 cropCtx.clearRect(0, 0, gridWidth, gridHeight);
                 cropCtx.drawImage(
                     imageRef.current,
-                    sx, sy, gridWidth, gridHeight,
+                    sx, sy, sWidth, sHeight,
                     0, 0, gridWidth, gridHeight
                 );
-
+    
                 // Convert the canvas to a data URL and store it in the array
                 sequence.push(cropCanvas.toDataURL());
             }
         }
-
+    
         setImageSequence(sequence);  // Store the generated sequence
     };
+    
 
     // Function to generate CSS keyframe animation
     const createKeyframeAnimation = () => {
@@ -255,6 +281,11 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
 
     return (
         <div>
+            {/* DPI Conversion Message */}
+            {dpiMessage && (
+                <p>{dpiMessage}</p>
+            )}
+
             {/* Image size display */}
             {imageSize.width > 0 && imageSize.height > 0 && (
                 <p>Image Size: {imageSize.width}px x {imageSize.height}px</p>
@@ -317,3 +348,5 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
 };
 
 export default ImageCanvas;
+
+               
