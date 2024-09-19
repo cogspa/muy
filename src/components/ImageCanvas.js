@@ -1,4 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
+import GIF from 'gif.js.optimized';
+import gifWorker from 'gif.js.optimized/dist/gif.worker.js';
+import gifshot from 'gifshot';
+
+
 
 const ImageCanvas = ({ imageSrc, gridSize }) => {
     const canvasRef = useRef(null);
@@ -14,6 +19,11 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
     const [gridSizeDisplay, setGridSizeDisplay] = useState({ width: 0, height: 0 }); // Grid rectangle size
     const [redBoxSize, setRedBoxSize] = useState({ width: 0, height: 0 }); // Red box size
     const [dpiMessage, setDpiMessage] = useState(''); // DPI message
+
+    const [gifUrl, setGifUrl] = useState(null);
+    const [gifLoading, setGifLoading] = useState(false);
+
+
 
     const MAX_WIDTH = 800;
     const MAX_HEIGHT = 600;
@@ -76,6 +86,42 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
         setDrawMode(!drawMode);
         if (!drawMode) setDefiningBox(null);
     };
+
+    const createGif = () => {
+        if (imageSequence.length === 0) return;
+      
+        // Display a loading indicator (optional)
+        setGifLoading(true);
+      
+        gifshot.createGIF(
+          {
+            images: imageSequence,
+            interval: 0.2, // Adjust frame delay (in seconds)
+            gifWidth: gridSizeDisplay.width,
+            gifHeight: gridSizeDisplay.height,
+            numFrames: imageSequence.length,
+            frameDuration: 1, // Adjust as needed
+          },
+          function (obj) {
+            // Hide the loading indicator
+            setGifLoading(false);
+      
+            if (!obj.error) {
+              const image = obj.image;
+              const link = document.createElement('a');
+              link.href = image;
+              link.download = 'animation.gif';
+              link.click();
+      
+              // Optionally, display the GIF in the UI
+              setGifUrl(image);
+            } else {
+              console.error('Error creating GIF:', obj.errorMsg);
+            }
+          }
+        );
+      };
+      
 
     const handleMouseDown = (event) => {
         const rect = canvasRef.current.getBoundingClientRect();
@@ -238,6 +284,19 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
         setImageSequence(sequence);  // Store the generated sequence
     };
     
+    const downloadImages = () => {
+        imageSequence.forEach((imgSrc, index) => {
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.href = imgSrc;
+                link.download = `Image_${index + 1}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }, index * 100); // Delay each download by 100ms
+        });
+    };
+    
 
     // Function to generate CSS keyframe animation
     const createKeyframeAnimation = () => {
@@ -267,6 +326,8 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
         const styleElement = document.createElement('style');
         styleElement.innerHTML = keyframes;
         document.head.appendChild(styleElement);
+
+        
 
         // Apply the animation to a div
         setKeyframesStyle({
@@ -317,6 +378,25 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
             <button onClick={generateImageSequence} disabled={!definingBox}>
                 Generate Image Sequence
             </button>
+
+            <button onClick={downloadImages} disabled={imageSequence.length === 0}>
+    Download Images
+</button>
+
+{/* Button to create the GIF */}
+<button onClick={createGif} disabled={imageSequence.length === 0 || gifLoading}>
+  {gifLoading ? 'Creating GIF...' : 'Create GIF'}
+</button>
+
+{/* Display the generated GIF */}
+{gifUrl && (
+  <div>
+    <h3>Generated GIF:</h3>
+    <img src={gifUrl} alt="Generated GIF" />
+  </div>
+)}
+
+
 
             {/* Thumbnails of generated image sequence */}
             {imageSequence.length > 0 && (
