@@ -10,6 +10,9 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
     const [resizeCorner, setResizeCorner] = useState(null);
     const [imageSequence, setImageSequence] = useState([]); // Store the extracted frames
     const [keyframesStyle, setKeyframesStyle] = useState(null); // Store keyframes animation
+    const [imageSize, setImageSize] = useState({ width: 0, height: 0 }); // Image size
+    const [gridSizeDisplay, setGridSizeDisplay] = useState({ width: 0, height: 0 }); // Grid rectangle size
+    const [redBoxSize, setRedBoxSize] = useState({ width: 0, height: 0 }); // Red box size
 
     const MAX_WIDTH = 800;
     const MAX_HEIGHT = 600;
@@ -35,6 +38,9 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
                 scaledH = MAX_HEIGHT;
                 scaledW = MAX_HEIGHT * aspectRatio;
             }
+
+            // Set the image size state
+            setImageSize({ width: scaledW, height: scaledH });
 
             const canvas = canvasRef.current;
             const ctx = canvas.getContext('2d');
@@ -103,11 +109,24 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
             width: Math.abs(currentX - startPoint.x),
             height: Math.abs(currentY - startPoint.y)
         });
+
+        // Update red box size in real-time
+        setRedBoxSize({
+            width: Math.abs(currentX - startPoint.x),
+            height: Math.abs(currentY - startPoint.y)
+        });
     };
 
     const handleMouseUp = () => {
         setStartPoint(null);
         setIsResizing(false);
+
+        // Calculate the grid size (width and height of each rectangle)
+        if (definingBox) {
+            const gridWidth = definingBox.width / gridSize.horizontal;
+            const gridHeight = definingBox.height / gridSize.vertical;
+            setGridSizeDisplay({ width: gridWidth, height: gridHeight });
+        }
     };
 
     const isInResizeHandle = (mouseX, mouseY) => {
@@ -236,7 +255,20 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
 
     return (
         <div>
+            {/* Image size display */}
+            {imageSize.width > 0 && imageSize.height > 0 && (
+                <p>Image Size: {imageSize.width}px x {imageSize.height}px</p>
+            )}
+
+            {/* Red box size display */}
+            {redBoxSize.width > 0 && redBoxSize.height > 0 && (
+                <p>Red Box Size: {redBoxSize.width}px x {redBoxSize.height}px</p>
+            )}
+
+            {/* Button to toggle drawing the box */}
             <button onClick={toggleDrawMode}>{drawMode ? 'Finish Drawing Box' : 'Draw Box'}</button>
+
+            {/* Canvas for drawing and grid */}
             <canvas
                 ref={canvasRef}
                 onMouseDown={handleMouseDown}
@@ -245,10 +277,29 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
                 style={{ width: '100%', maxWidth: '800px', maxHeight: '600px', border: '1px solid black' }}
             />
 
+            {/* Grid rectangle size display */}
+            {gridSizeDisplay.width > 0 && gridSizeDisplay.height > 0 && (
+                <p>Grid Rectangle Size: {gridSizeDisplay.width}px x {gridSizeDisplay.height}px</p>
+            )}
+
             {/* Button to generate the image sequence */}
             <button onClick={generateImageSequence} disabled={!definingBox}>
                 Generate Image Sequence
             </button>
+
+            {/* Thumbnails of generated image sequence */}
+            {imageSequence.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', margin: '20px 0' }}>
+                    {imageSequence.map((imgSrc, index) => (
+                        <img
+                            key={index}
+                            src={imgSrc}
+                            alt={`Thumbnail ${index + 1}`}
+                            style={{ width: '100px', height: '100px', objectFit: 'contain', marginRight: '10px', marginBottom: '10px' }}
+                        />
+                    ))}
+                </div>
+            )}
 
             {/* Button to create the CSS animation */}
             <button onClick={createKeyframeAnimation} disabled={imageSequence.length === 0}>
