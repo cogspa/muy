@@ -1,11 +1,8 @@
-import React, { useRef, useEffect, useState } from 'react';
-import GIF from 'gif.js.optimized';
-import gifWorker from 'gif.js.optimized/dist/gif.worker.js';
+import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import gifshot from 'gifshot';
+import JSZip from 'jszip';
 
-
-
-const ImageCanvas = ({ imageSrc, gridSize }) => {
+const ImageCanvas = forwardRef(({ imageSrc, gridSize, selectedArea, setSelectedArea }, ref) => {
     const canvasRef = useRef(null);
     const imageRef = useRef(null);
     const [startPoint, setStartPoint] = useState(null);
@@ -19,15 +16,164 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
     const [gridSizeDisplay, setGridSizeDisplay] = useState({ width: 0, height: 0 }); // Grid rectangle size
     const [redBoxSize, setRedBoxSize] = useState({ width: 0, height: 0 }); // Red box size
     const [dpiMessage, setDpiMessage] = useState(''); // DPI message
-
-    const [gifUrl, setGifUrl] = useState(null);
     const [gifLoading, setGifLoading] = useState(false);
-
-
+    const [originalSize, setOriginalSize] = useState({ width: 0, height: 0 });
+    const [scaleFactor, setScaleFactor] = useState(1);
 
     const MAX_WIDTH = 800;
     const MAX_HEIGHT = 600;
     const TARGET_DPI = 72;
+
+    useImperativeHandle(ref, () => ({
+        generateImageSequence: () => {
+            if (!definingBox || !imageRef.current) return;
+            
+            const sequence = [];
+            // Calculate original coordinates and dimensions
+            const originalX = definingBox.x * scaleFactor;
+            const originalY = definingBox.y * scaleFactor;
+            const originalWidth = definingBox.width * scaleFactor;
+            const originalHeight = definingBox.height * scaleFactor;
+            const originalGridWidth = originalWidth / gridSize.horizontal;
+            const originalGridHeight = originalHeight / gridSize.vertical;
+            
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            // Use original resolution for output
+            tempCanvas.width = originalGridWidth;
+            tempCanvas.height = originalGridHeight;
+            
+            for (let i = 0; i < gridSize.vertical; i++) {
+                for (let j = 0; j < gridSize.horizontal; j++) {
+                    tempCtx.clearRect(0, 0, originalGridWidth, originalGridHeight);
+                    tempCtx.drawImage(
+                        imageRef.current,
+                        originalX + j * originalGridWidth,
+                        originalY + i * originalGridHeight,
+                        originalGridWidth,
+                        originalGridHeight,
+                        0,
+                        0,
+                        originalGridWidth,
+                        originalGridHeight
+                    );
+                    sequence.push(tempCanvas.toDataURL());
+                }
+            }
+            
+            // Create a zip file containing all images at original resolution
+            const zip = new JSZip();
+            sequence.forEach((dataUrl, index) => {
+                const base64Data = dataUrl.replace(/^data:image\/(png|jpg);base64,/, "");
+                zip.file(`frame_${index + 1}.png`, base64Data, { base64: true });
+            });
+            
+            zip.generateAsync({ type: "blob" }).then(function(content) {
+                const url = window.URL.createObjectURL(content);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = "image_sequence.zip";
+                link.click();
+            });
+        },
+        createGif: () => {
+            if (!definingBox || !imageRef.current) return;
+            
+            setGifLoading(true);
+            const sequence = [];
+            // Calculate original coordinates and dimensions
+            const originalX = definingBox.x * scaleFactor;
+            const originalY = definingBox.y * scaleFactor;
+            const originalWidth = definingBox.width * scaleFactor;
+            const originalHeight = definingBox.height * scaleFactor;
+            const originalGridWidth = originalWidth / gridSize.horizontal;
+            const originalGridHeight = originalHeight / gridSize.vertical;
+            
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            // Use original resolution for output
+            tempCanvas.width = originalGridWidth;
+            tempCanvas.height = originalGridHeight;
+            
+            for (let i = 0; i < gridSize.vertical; i++) {
+                for (let j = 0; j < gridSize.horizontal; j++) {
+                    tempCtx.clearRect(0, 0, originalGridWidth, originalGridHeight);
+                    tempCtx.drawImage(
+                        imageRef.current,
+                        originalX + j * originalGridWidth,
+                        originalY + i * originalGridHeight,
+                        originalGridWidth,
+                        originalGridHeight,
+                        0,
+                        0,
+                        originalGridWidth,
+                        originalGridHeight
+                    );
+                    sequence.push(tempCanvas.toDataURL());
+                }
+            }
+            
+            gifshot.createGIF({
+                images: sequence,
+                gifWidth: originalGridWidth,
+                gifHeight: originalGridHeight,
+                interval: 0.2,
+                numFrames: sequence.length,
+                frameDuration: 1,
+                sampleInterval: 10,
+                numWorkers: 2
+            }, function(obj) {
+                setGifLoading(false);
+                if(!obj.error) {
+                    const image = obj.image;
+                    const link = document.createElement('a');
+                    link.href = image;
+                    link.download = 'animation.gif';
+                    link.click();
+                } else {
+                    console.error('Error creating GIF:', obj.errorMsg);
+                }
+            });
+        },
+        generateAnimation: () => {
+            if (!definingBox || !imageRef.current) return;
+            
+            const sequence = [];
+            // Calculate original coordinates and dimensions
+            const originalX = definingBox.x * scaleFactor;
+            const originalY = definingBox.y * scaleFactor;
+            const originalWidth = definingBox.width * scaleFactor;
+            const originalHeight = definingBox.height * scaleFactor;
+            const originalGridWidth = originalWidth / gridSize.horizontal;
+            const originalGridHeight = originalHeight / gridSize.vertical;
+            
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = originalGridWidth;
+            tempCanvas.height = originalGridHeight;
+            
+            for (let i = 0; i < gridSize.vertical; i++) {
+                for (let j = 0; j < gridSize.horizontal; j++) {
+                    tempCtx.clearRect(0, 0, originalGridWidth, originalGridHeight);
+                    tempCtx.drawImage(
+                        imageRef.current,
+                        originalX + j * originalGridWidth,
+                        originalY + i * originalGridHeight,
+                        originalGridWidth,
+                        originalGridHeight,
+                        0,
+                        0,
+                        originalGridWidth,
+                        originalGridHeight
+                    );
+                    sequence.push(tempCanvas.toDataURL());
+                }
+            }
+            
+            setImageSequence(sequence);
+            createAnimationKeyframes(sequence);
+        }
+    }));
 
     useEffect(() => {
         if (!imageSrc) return;
@@ -35,27 +181,28 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
         const img = new Image();
         img.src = imageSrc;
         img.onload = () => {
-            imageRef.current = img; // Ensure the image is fully loaded
+            imageRef.current = img;
+            
+            // Store original dimensions
+            setOriginalSize({ width: img.width, height: img.height });
 
-            // Assume the image is either 72 DPI or 300 DPI (for print) for this simulation.
-            const assumedDPI = img.width > MAX_WIDTH ? 300 : 72; // Assume large images are print resolution
+            const assumedDPI = img.width > MAX_WIDTH ? 300 : 72;
             let scaledW = img.width;
             let scaledH = img.height;
 
             let dpiMessage = `Original DPI assumed: ${assumedDPI} DPI. `;
-            // If the image is not already 72 DPI, convert it to 72 DPI (for display)
             if (assumedDPI !== TARGET_DPI) {
-                // Simulate DPI conversion: resize the image accordingly
                 const dpiFactor = assumedDPI / TARGET_DPI;
                 scaledW = Math.round(img.width / dpiFactor);
                 scaledH = Math.round(img.height / dpiFactor);
+                setScaleFactor(dpiFactor);
                 dpiMessage += `Converted to 72 DPI. New size: ${scaledW}px x ${scaledH}px.`;
             } else {
                 dpiMessage += `Image is already 72 DPI.`;
+                setScaleFactor(1);
             }
             setDpiMessage(dpiMessage);
 
-            // Respect the maximum width and height for the canvas
             const aspectRatio = scaledW / scaledH;
             if (scaledW > MAX_WIDTH) {
                 scaledW = MAX_WIDTH;
@@ -66,7 +213,6 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
                 scaledW = MAX_HEIGHT * aspectRatio;
             }
 
-            // Set the image size state
             setImageSize({ width: scaledW, height: scaledH });
 
             const canvas = canvasRef.current;
@@ -74,7 +220,7 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
             canvas.width = scaledW;
             canvas.height = scaledH;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0, scaledW, scaledH); // Draw the image only after it's fully loaded
+            ctx.drawImage(img, 0, 0, scaledW, scaledH);
 
             if (definingBox) {
                 drawDefiningBoxAndGrid(ctx);
@@ -86,42 +232,6 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
         setDrawMode(!drawMode);
         if (!drawMode) setDefiningBox(null);
     };
-
-    const createGif = () => {
-        if (imageSequence.length === 0) return;
-      
-        // Display a loading indicator (optional)
-        setGifLoading(true);
-      
-        gifshot.createGIF(
-          {
-            images: imageSequence,
-            interval: 0.2, // Adjust frame delay (in seconds)
-            gifWidth: gridSizeDisplay.width,
-            gifHeight: gridSizeDisplay.height,
-            numFrames: imageSequence.length,
-            frameDuration: 1, // Adjust as needed
-          },
-          function (obj) {
-            // Hide the loading indicator
-            setGifLoading(false);
-      
-            if (!obj.error) {
-              const image = obj.image;
-              const link = document.createElement('a');
-              link.href = image;
-              link.download = 'animation.gif';
-              link.click();
-      
-              // Optionally, display the GIF in the UI
-              setGifUrl(image);
-            } else {
-              console.error('Error creating GIF:', obj.errorMsg);
-            }
-          }
-        );
-      };
-      
 
     const handleMouseDown = (event) => {
         const rect = canvasRef.current.getBoundingClientRect();
@@ -298,135 +408,79 @@ const ImageCanvas = ({ imageSrc, gridSize }) => {
     };
     
 
-    // Function to generate CSS keyframe animation
-    const createKeyframeAnimation = () => {
-        if (!imageSequence || imageSequence.length === 0) return;
+    const createAnimationKeyframes = (sequence) => {
+        if (!sequence.length) return;
 
-        // Generate keyframe steps for each image in the sequence
-        let keyframes = `@keyframes imageSequence {`;
-        const step = 100 / imageSequence.length;
-
-        imageSequence.forEach((image, index) => {
-            keyframes += `
-                ${step * index}% {
-                    background-image: url(${image});
+        // Create a style element for the keyframes
+        const styleSheet = document.createElement('style');
+        let keyframesRule = '@keyframes sequenceAnimation {';
+        
+        sequence.forEach((_, index) => {
+            const percentage = (index / (sequence.length - 1)) * 100;
+            keyframesRule += `
+                ${percentage}% {
+                    background-image: url('${sequence[index]}');
                 }
             `;
         });
-
-        keyframes += `
-            100% {
-                background-image: url(${imageSequence[0]});
-            }
-        `;
-
-        keyframes += `}`;
-
-        // Add the keyframes to the document head as a style element
-        const styleElement = document.createElement('style');
-        styleElement.innerHTML = keyframes;
-        document.head.appendChild(styleElement);
-
         
+        keyframesRule += '}';
+        styleSheet.textContent = keyframesRule;
+        document.head.appendChild(styleSheet);
 
-        // Apply the animation to a div
+        // Set the animation style
         setKeyframesStyle({
-            animation: 'imageSequence 2s steps(1) infinite',
-            width: '200px',
-            height: '200px',
+            width: `${gridSizeDisplay.width}px`,
+            height: `${gridSizeDisplay.height}px`,
             backgroundSize: 'contain',
             backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
+            animation: `sequenceAnimation ${sequence.length * 0.2}s steps(1) infinite`
         });
     };
 
     return (
-        <div>
-            {/* DPI Conversion Message */}
-            {dpiMessage && (
-                <p>{dpiMessage}</p>
-            )}
-
-            {/* Image size display */}
-            {imageSize.width > 0 && imageSize.height > 0 && (
-                <p>Image Size: {imageSize.width}px x {imageSize.height}px</p>
-            )}
-
-            {/* Red box size display */}
-            {redBoxSize.width > 0 && redBoxSize.height > 0 && (
-                <p>Red Box Size: {redBoxSize.width}px x {redBoxSize.height}px</p>
-            )}
-
-            {/* Button to toggle drawing the box */}
-            <button onClick={toggleDrawMode}>{drawMode ? 'Finish Drawing Box' : 'Draw Box'}</button>
-
-            {/* Canvas for drawing and grid */}
+        <div className="relative">
             <canvas
                 ref={canvasRef}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
-                style={{ width: '100%', maxWidth: '800px', maxHeight: '600px', border: '1px solid black' }}
+                style={{ cursor: drawMode ? 'crosshair' : 'default' }}
             />
-
-            {/* Grid rectangle size display */}
-            {gridSizeDisplay.width > 0 && gridSizeDisplay.height > 0 && (
-                <p>Grid Rectangle Size: {gridSizeDisplay.width}px x {gridSizeDisplay.height}px</p>
-            )}
-
-            {/* Button to generate the image sequence */}
-            <button onClick={generateImageSequence} disabled={!definingBox}>
-                Generate Image Sequence
-            </button>
-
-            <button onClick={downloadImages} disabled={imageSequence.length === 0}>
-    Download Images
-</button>
-
-{/* Button to create the GIF */}
-<button onClick={createGif} disabled={imageSequence.length === 0 || gifLoading}>
-  {gifLoading ? 'Creating GIF...' : 'Create GIF'}
-</button>
-
-{/* Display the generated GIF */}
-{gifUrl && (
-  <div>
-    <h3>Generated GIF:</h3>
-    <img src={gifUrl} alt="Generated GIF" />
-  </div>
-)}
-
-
-
-            {/* Thumbnails of generated image sequence */}
-            {imageSequence.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', margin: '20px 0' }}>
-                    {imageSequence.map((imgSrc, index) => (
-                        <img
-                            key={index}
-                            src={imgSrc}
-                            alt={`Thumbnail ${index + 1}`}
-                            style={{ width: '100px', height: '100px', objectFit: 'contain', marginRight: '10px', marginBottom: '10px' }}
-                        />
-                    ))}
+            {dpiMessage && (
+                <div className="mt-2 text-sm text-gray-600">
+                    {dpiMessage}
                 </div>
             )}
-
-            {/* Button to create the CSS animation */}
-            <button onClick={createKeyframeAnimation} disabled={imageSequence.length === 0}>
-                Generate Animation
-            </button>
-
-            {/* Display the animated image sequence */}
+            {imageSize.width > 0 && (
+                <div className="mt-2 text-sm text-gray-600">
+                    Image Size: {imageSize.width}px x {imageSize.height}px
+                </div>
+            )}
+            {definingBox && (
+                <div className="mt-2 text-sm text-gray-600">
+                    Selected Area: {Math.round(redBoxSize.width)}px x {Math.round(redBoxSize.height)}px
+                </div>
+            )}
+            {gridSizeDisplay.width > 0 && (
+                <div className="mt-2 text-sm text-gray-600">
+                    Grid Cell Size: {Math.round(gridSizeDisplay.width)}px x {Math.round(gridSizeDisplay.height)}px
+                </div>
+            )}
             {keyframesStyle && (
-                <div style={keyframesStyle} className="animated-image-sequence">
-                    {/* The CSS keyframe animation will be applied here */}
-                </div>
+                <div 
+                    className="mt-4 border rounded"
+                    style={keyframesStyle}
+                />
             )}
+            <button
+                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                onClick={toggleDrawMode}
+            >
+                {drawMode ? 'Cancel Selection' : 'Select Area'}
+            </button>
         </div>
     );
-};
+});
 
 export default ImageCanvas;
-
-               
