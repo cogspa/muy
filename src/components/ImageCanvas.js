@@ -411,8 +411,15 @@ const ImageCanvas = forwardRef(({ imageSrc, gridSize, selectedArea, setSelectedA
     const createAnimationKeyframes = (sequence) => {
         if (!sequence.length) return;
 
+        // Remove any existing animation style
+        const existingStyle = document.querySelector('#sequence-animation');
+        if (existingStyle) {
+            existingStyle.remove();
+        }
+
         // Create a style element for the keyframes
         const styleSheet = document.createElement('style');
+        styleSheet.id = 'sequence-animation';
         let keyframesRule = '@keyframes sequenceAnimation {';
         
         sequence.forEach((_, index) => {
@@ -428,12 +435,28 @@ const ImageCanvas = forwardRef(({ imageSrc, gridSize, selectedArea, setSelectedA
         styleSheet.textContent = keyframesRule;
         document.head.appendChild(styleSheet);
 
+        // Calculate display size while maintaining aspect ratio
+        const maxPreviewWidth = 300; // Set a reasonable max width for the preview
+        const gridWidth = definingBox.width / gridSize.horizontal;
+        const gridHeight = definingBox.height / gridSize.vertical;
+        let displayWidth = gridWidth;
+        let displayHeight = gridHeight;
+        
+        if (displayWidth > maxPreviewWidth) {
+            const scale = maxPreviewWidth / displayWidth;
+            displayWidth = maxPreviewWidth;
+            displayHeight = gridHeight * scale;
+        }
+
         // Set the animation style
         setKeyframesStyle({
-            width: `${gridSizeDisplay.width}px`,
-            height: `${gridSizeDisplay.height}px`,
+            width: `${displayWidth}px`,
+            height: `${displayHeight}px`,
             backgroundSize: 'contain',
             backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
             animation: `sequenceAnimation ${sequence.length * 0.2}s steps(1) infinite`
         });
     };
@@ -468,10 +491,13 @@ const ImageCanvas = forwardRef(({ imageSrc, gridSize, selectedArea, setSelectedA
                 </div>
             )}
             {keyframesStyle && (
-                <div 
-                    className="mt-4 border rounded"
-                    style={keyframesStyle}
-                />
+                <div className="mt-4">
+                    <div className="text-sm font-medium mb-2">Animation Preview:</div>
+                    <div 
+                        className="border rounded bg-white shadow-sm"
+                        style={keyframesStyle}
+                    />
+                </div>
             )}
             <button
                 className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"

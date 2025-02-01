@@ -36,7 +36,23 @@ function App() {
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="container mx-auto">
-        <h1 className="text-4xl font-bold mb-8 text-center">Image Grid Analyzer</h1>
+        <h1 className="text-4xl font-bold mb-4 text-center">Muybridge Machine</h1>
+        <div className="flex justify-center mb-8">
+          <img 
+            src="https://upload.wikimedia.org/wikipedia/commons/7/73/The_Horse_in_Motion.jpg" 
+            alt="The Horse in Motion by Eadweard Muybridge (1878)" 
+            className="max-w-2xl w-full rounded-lg shadow-lg"
+          />
+        </div>
+        <div className="text-center mb-8 text-gray-600 max-w-2xl mx-auto">
+          <p className="mb-2">Create your own motion studies inspired by Eadweard Muybridge:</p>
+          <ol className="text-left list-decimal list-inside space-y-2">
+            <li>Upload an image containing sequential motion</li>
+            <li>Adjust the grid to divide your image into frames</li>
+            <li>Generate an animation sequence or create a GIF</li>
+            <li>Download your animation to share or study</li>
+          </ol>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
