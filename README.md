@@ -1,6 +1,66 @@
-# Getting Started with Create React App
+# Muybridge Machine
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Muybridge Machine is a web app that lets you import an image grid—ideally a motion-study or animation sequence—and instantly turn it into a GIF and individual frames. It’s a fast way to create motion graphics and social content without all the extra steps in Photoshop or After Effects.
+
+## Live App
+
+Use Muybridge Machine in your browser at **https://www.muybridgemachine.com/**.
+
+## Features
+
+- **Image upload**: Load any image from your computer (e.g., scanned film strips, contact sheets, sprite sheets, or motion studies).
+- **Interactive grid**: Adjust horizontal and vertical boxes to match the number of frames in your motion sequence.
+- **Region selection**: Draw and resize a selection box over the image to focus on a specific motion area.
+- **Image sequence export**: Slice the selected region into individual frames at the image's original resolution and download them as a `.zip` archive.
+- **GIF creation**: Automatically build an animated GIF from the extracted frames.
+- **Animation preview**: Generate a simple animation from the frames for quick visual feedback.
+
+## How to Use
+
+1. **Open the app**
+   - Go to **https://www.muybridgemachine.com/** in your browser.
+
+2. **Upload your image grid**
+   - Click the **Upload Image** card and choose an image that contains a motion-study, sprite sheet, or any grid-based animation sequence.
+
+3. **Set the grid**
+   - In **Grid Settings**, set the number of **Horizontal Boxes** and **Vertical Boxes** to match the layout of your image grid.
+
+4. **Adjust the selection**
+   - Use the selection box on the image preview to focus on the region that contains the motion sequence you care about.
+
+5. **Generate outputs**
+   - **Generate Image Sequence**: slices the selected area into individual frames and downloads them as a `.zip`.
+   - **Create GIF**: builds an animated GIF from the frames and downloads it.
+   - **Generate Animation**: previews a simple animation in the browser.
+
+6. **Iterate**
+   - Adjust the grid or selection and regenerate GIFs or frame sequences until you like the result.
+
+## Getting Started
+
+1. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Start the development server:
+
+   ```bash
+   npm start
+   ```
+
+3. Open `http://localhost:3000` in your browser.
+
+4. Upload an image with sequential motion, adjust the grid, draw your selection, and generate either an image sequence, GIF, or animation.
+
+## Tech Stack
+
+- **React** for the UI
+- **Canvas** APIs for drawing, selection, and slicing frames
+- **gifshot** for GIF generation
+- **JSZip** for packaging frame sequences as a downloadable archive
 
 ## Available Scripts
 
