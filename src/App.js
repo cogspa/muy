@@ -4,7 +4,7 @@ import { Button } from './components/ui/button';
 import { Card, CardContent } from './components/ui/card';
 import ImageUploader from './components/ImageUploader';
 import ImageCanvas from './components/ImageCanvas';
-// import { Upload, Grid, Play, Film, X } from 'lucide-react'; // Removed to avoid dependency issues 
+import { Mail, Send, User, MessageSquare } from 'lucide-react';
 // Wait, I don't know if lucide-react is installed. I should check package.json. 
 // If not, I'll stick to text or simple SVGs. 
 // Let's check package.json first. 
@@ -153,7 +153,7 @@ function App() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 relative flex items-center justify-center p-12 overflow-hidden">
+        <div className="flex-1 relative flex items-center justify-center p-12 overflow-y-auto">
           {imageSrc ? (
             <div className="relative max-w-full max-h-full shadow-2xl animate-in zoom-in-95 duration-500 fade-in">
               <div className="absolute -inset-4 border border-white/5 rounded-lg pointer-events-none"></div>
@@ -182,7 +182,7 @@ function App() {
 
               <div className="border-t border-white/10 pt-8">
                 <h3 className="text-lg font-serif text-white/70 mb-6 tracking-wide">Inspiration: The Science of Motion</h3>
-                <div className="aspect-video w-full rounded-sm overflow-hidden border border-white/10 shadow-2xl bg-black/40">
+                <div className="aspect-video w-1/2 mx-auto rounded-sm overflow-hidden border border-white/10 shadow-2xl bg-black/40">
                   <iframe
                     width="100%"
                     height="100%"
@@ -194,6 +194,52 @@ function App() {
                     className="opacity-80 hover:opacity-100 transition-opacity duration-500"
                   ></iframe>
                 </div>
+              </div>
+
+              {/* Contact / Correspondence Section */}
+              <div className="border-t border-white/10 pt-8 mt-8 pb-12">
+                <h3 className="text-lg font-serif text-white/70 mb-6 tracking-wide flex items-center gap-2">
+                  <Mail className="w-4 h-4" /> Correspondence
+                </h3>
+                <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
+                  <CardContent className="p-6 space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-xs font-mono text-white/50 uppercase tracking-wider flex items-center gap-2">
+                          <User className="w-3 h-3" /> Name
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="E.g. Eadweard M."
+                          className="w-full bg-black/20 border border-white/10 rounded-sm px-3 py-2 text-sm font-mono text-white/90 placeholder:text-white/20 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-mono text-white/50 uppercase tracking-wider flex items-center gap-2">
+                          <Mail className="w-3 h-3" /> Electronic Mail
+                        </label>
+                        <input
+                          type="email"
+                          placeholder="studio@example.com"
+                          className="w-full bg-black/20 border border-white/10 rounded-sm px-3 py-2 text-sm font-mono text-white/90 placeholder:text-white/20 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-mono text-white/50 uppercase tracking-wider flex items-center gap-2">
+                        <MessageSquare className="w-3 h-3" /> Inquiry
+                      </label>
+                      <textarea
+                        rows="4"
+                        placeholder="Regarding the motion studies..."
+                        className="w-full bg-black/20 border border-white/10 rounded-sm px-3 py-2 text-sm font-mono text-white/90 placeholder:text-white/20 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all resize-none"
+                      />
+                    </div>
+                    <Button className="w-full font-mono text-xs uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 h-10 gap-2">
+                      <Send className="w-3 h-3" /> Send Dispatch
+                    </Button>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           )}
