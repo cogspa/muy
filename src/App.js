@@ -186,7 +186,7 @@ function App() {
                   <iframe
                     width="100%"
                     height="100%"
-                    src="https://www.youtube.com/embed/fhfLpbrf62E"
+                    src="https://www.youtube.com/embed/Nlbm3Os81_A"
                     title="Eadweard Muybridge: The Horse in Motion"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -202,42 +202,53 @@ function App() {
                   <Mail className="w-4 h-4" /> Correspondence
                 </h3>
                 <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
-                  <CardContent className="p-6 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-xs font-mono text-white/50 uppercase tracking-wider flex items-center gap-2">
-                          <User className="w-3 h-3" /> Name
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="E.g. Eadweard M."
-                          className="w-full bg-black/20 border border-white/10 rounded-sm px-3 py-2 text-sm font-mono text-white/90 placeholder:text-white/20 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all"
-                        />
+                  <CardContent className="p-6">
+                    <form name="contact" method="POST" data-netlify="true">
+                      <input type="hidden" name="form-name" value="contact" />
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <label className="text-xs font-mono text-white/50 uppercase tracking-wider flex items-center gap-2">
+                              <User className="w-3 h-3" /> Name
+                            </label>
+                            <input
+                              type="text"
+                              name="name"
+                              placeholder="E.g. Eadweard M."
+                              required
+                              className="w-full bg-black/20 border border-white/10 rounded-sm px-3 py-2 text-sm font-mono text-white/90 placeholder:text-white/20 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-mono text-white/50 uppercase tracking-wider flex items-center gap-2">
+                              <Mail className="w-3 h-3" /> Electronic Mail
+                            </label>
+                            <input
+                              type="email"
+                              name="email"
+                              placeholder="studio@example.com"
+                              required
+                              className="w-full bg-black/20 border border-white/10 rounded-sm px-3 py-2 text-sm font-mono text-white/90 placeholder:text-white/20 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-mono text-white/50 uppercase tracking-wider flex items-center gap-2">
+                            <MessageSquare className="w-3 h-3" /> Inquiry
+                          </label>
+                          <textarea
+                            name="message"
+                            rows="4"
+                            placeholder="Regarding the motion studies..."
+                            required
+                            className="w-full bg-black/20 border border-white/10 rounded-sm px-3 py-2 text-sm font-mono text-white/90 placeholder:text-white/20 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all resize-none"
+                          />
+                        </div>
+                        <Button type="submit" className="w-full font-mono text-xs uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 h-10 gap-2">
+                          <Send className="w-3 h-3" /> Send Dispatch
+                        </Button>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-xs font-mono text-white/50 uppercase tracking-wider flex items-center gap-2">
-                          <Mail className="w-3 h-3" /> Electronic Mail
-                        </label>
-                        <input
-                          type="email"
-                          placeholder="studio@example.com"
-                          className="w-full bg-black/20 border border-white/10 rounded-sm px-3 py-2 text-sm font-mono text-white/90 placeholder:text-white/20 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-mono text-white/50 uppercase tracking-wider flex items-center gap-2">
-                        <MessageSquare className="w-3 h-3" /> Inquiry
-                      </label>
-                      <textarea
-                        rows="4"
-                        placeholder="Regarding the motion studies..."
-                        className="w-full bg-black/20 border border-white/10 rounded-sm px-3 py-2 text-sm font-mono text-white/90 placeholder:text-white/20 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all resize-none"
-                      />
-                    </div>
-                    <Button className="w-full font-mono text-xs uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 h-10 gap-2">
-                      <Send className="w-3 h-3" /> Send Dispatch
-                    </Button>
+                    </form>
                   </CardContent>
                 </Card>
               </div>
