@@ -176,9 +176,25 @@ function App() {
                 className="w-full rounded-sm opacity-20 mix-blend-overlay mb-8 grayscale contrast-125"
               />
               <h2 className="text-4xl font-serif text-white/90 mb-4 tracking-wide">Begin Your Motion Study</h2>
-              <p className="font-mono text-white/50 text-sm max-w-md mx-auto leading-relaxed">
+              <p className="font-mono text-white/50 text-sm max-w-md mx-auto leading-relaxed mb-12">
                 Upload a sequential image series to analyze movement patterns, generate frames, and create digital motion loops.
               </p>
+
+              <div className="border-t border-white/10 pt-8">
+                <h3 className="text-lg font-serif text-white/70 mb-6 tracking-wide">Inspiration: The Science of Motion</h3>
+                <div className="aspect-video w-full rounded-sm overflow-hidden border border-white/10 shadow-2xl bg-black/40">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src="https://www.youtube.com/embed/fhfLpbrf62E"
+                    title="Eadweard Muybridge: The Horse in Motion"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="opacity-80 hover:opacity-100 transition-opacity duration-500"
+                  ></iframe>
+                </div>
+              </div>
             </div>
           )}
         </div>
