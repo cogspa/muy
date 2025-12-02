@@ -14,6 +14,11 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        serif: ['"Playfair Display"', 'serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
+        sans: ['"Inter"', 'sans-serif'], // Optional: keep a clean sans for UI elements if needed
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

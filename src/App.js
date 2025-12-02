@@ -1,15 +1,21 @@
 import React, { useState, useRef } from 'react';
 import './styles/globals.css';
 import { Button } from './components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './components/ui/card';
+import { Card, CardContent } from './components/ui/card';
 import ImageUploader from './components/ImageUploader';
 import ImageCanvas from './components/ImageCanvas';
+// import { Upload, Grid, Play, Film, X } from 'lucide-react'; // Removed to avoid dependency issues 
+// Wait, I don't know if lucide-react is installed. I should check package.json. 
+// If not, I'll stick to text or simple SVGs. 
+// Let's check package.json first. 
+// Actually, I'll just use text for now to be safe, or standard HTML entities.
 
 function App() {
   const [imageSrc, setImageSrc] = useState(null);
   const [gridSize, setGridSize] = useState({ horizontal: 3, vertical: 3 });
   const [selectedArea, setSelectedArea] = useState(null);
   const [isCreatingGif, setIsCreatingGif] = useState(false);
+  const [previewStyle, setPreviewStyle] = useState(null);
   const canvasRef = useRef(null);
 
   const handleGenerateSequence = () => {
@@ -22,7 +28,6 @@ function App() {
     if (canvasRef.current) {
       setIsCreatingGif(true);
       canvasRef.current.createGif();
-      // Reset loading state after a reasonable timeout
       setTimeout(() => setIsCreatingGif(false), 5000);
     }
   };
@@ -34,109 +39,157 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="container mx-auto">
-        <h1 className="text-4xl font-bold mb-4 text-center">Muybridge Machine</h1>
-        <div className="flex justify-center mb-8">
-          <img 
-            src="https://upload.wikimedia.org/wikipedia/commons/7/73/The_Horse_in_Motion.jpg" 
-            alt="The Horse in Motion by Eadweard Muybridge (1878)" 
-            className="max-w-2xl w-full rounded-lg shadow-lg"
-          />
+    <div className="flex h-screen bg-background text-foreground overflow-hidden font-serif selection:bg-primary selection:text-primary-foreground">
+      {/* Sidebar Controls */}
+      <aside className="w-96 border-r border-border bg-card/95 backdrop-blur-sm flex flex-col z-20 shadow-2xl transition-all duration-300">
+        <div className="p-8 border-b border-border/50">
+          <h1 className="text-3xl font-bold tracking-widest text-primary font-serif">MUYBRIDGE<br /><span className="text-xl font-normal opacity-70">MACHINE</span></h1>
+          <p className="text-xs font-mono mt-2 opacity-50 uppercase tracking-widest">Est. 2024 • Digital Darkroom</p>
         </div>
-        <div className="text-center mb-8 text-gray-600 max-w-2xl mx-auto">
-          <p className="mb-2">Create your own motion studies inspired by Eadweard Muybridge:</p>
-          <ol className="text-left list-decimal list-inside space-y-2">
-            <li>Upload an image containing sequential motion</li>
-            <li>Adjust the grid to divide your image into frames</li>
-            <li>Generate an animation sequence or create a GIF</li>
-            <li>Download your animation to share or study</li>
-          </ol>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upload Image</CardTitle>
-              <CardDescription>Select an image to analyze</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ImageUploader onImageLoad={setImageSrc} />
-            </CardContent>
-          </Card>
 
-          {imageSrc && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Grid Settings</CardTitle>
-                <CardDescription>Adjust the grid dimensions</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-col space-y-2">
-                  <label className="text-sm font-medium">Horizontal Boxes</label>
-                  <input
-                    type="number"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    value={gridSize.horizontal}
-                    onChange={e => setGridSize({ ...gridSize, horizontal: parseInt(e.target.value) })}
-                    min="1"
-                  />
-                </div>
-                <div className="flex flex-col space-y-2">
-                  <label className="text-sm font-medium">Vertical Boxes</label>
-                  <input
-                    type="number"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    value={gridSize.vertical}
-                    onChange={e => setGridSize({ ...gridSize, vertical: parseInt(e.target.value) })}
-                    min="1"
-                  />
-                </div>
+        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+          {/* Upload Section */}
+          <section>
+            <h2 className="text-sm font-mono uppercase tracking-widest opacity-70 mb-4 flex items-center gap-2">
+              <span className="w-2 h-2 bg-primary rounded-full"></span> Source Material
+            </h2>
+            <Card className="bg-background/50 border-border/50 shadow-sm">
+              <CardContent className="p-4">
+                <ImageUploader onImageLoad={(src) => {
+                  setImageSrc(src);
+                  setPreviewStyle(null); // Reset preview on new image
+                }} />
               </CardContent>
             </Card>
+          </section>
+
+          {/* Animation Preview Section */}
+          {previewStyle && (
+            <section className="animate-in slide-in-from-left-4 duration-500 fade-in">
+              <h2 className="text-sm font-mono uppercase tracking-widest opacity-70 mb-4 flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full"></span> Loop Preview
+              </h2>
+              <Card className="bg-background/50 border-border/50 shadow-sm overflow-hidden">
+                <CardContent className="p-4 flex justify-center bg-black/5">
+                  <div
+                    className="border border-primary/10 rounded-sm bg-background shadow-inner"
+                    style={previewStyle}
+                  />
+                </CardContent>
+              </Card>
+            </section>
           )}
 
+          {/* Grid Settings */}
           {imageSrc && (
-            <Card className="col-span-full">
-              <CardHeader>
-                <CardTitle>Image Preview</CardTitle>
-                <CardDescription>View and analyze the image with grid overlay</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="w-full overflow-auto">
-                  <ImageCanvas
-                    ref={canvasRef}
-                    imageSrc={imageSrc}
-                    gridSize={gridSize}
-                    selectedArea={selectedArea}
-                    setSelectedArea={setSelectedArea}
-                  />
-                </div>
-              </CardContent>
-              <CardFooter className="flex flex-wrap gap-2">
-                <Button onClick={handleGenerateSequence} variant="outline">
-                  Generate Image Sequence
+            <section className="animate-in slide-in-from-left-4 duration-500 fade-in">
+              <h2 className="text-sm font-mono uppercase tracking-widest opacity-70 mb-4 flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full"></span> Grid Parameters
+              </h2>
+              <Card className="bg-background/50 border-border/50 shadow-sm">
+                <CardContent className="p-4 space-y-4 font-mono text-sm">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-xs opacity-70">Horizontal</label>
+                      <input
+                        type="number"
+                        className="w-full bg-background border border-input rounded-sm px-3 py-2 focus:ring-1 focus:ring-primary outline-none transition-all"
+                        value={gridSize.horizontal}
+                        onChange={e => setGridSize({ ...gridSize, horizontal: Math.max(1, parseInt(e.target.value) || 1) })}
+                        min="1"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs opacity-70">Vertical</label>
+                      <input
+                        type="number"
+                        className="w-full bg-background border border-input rounded-sm px-3 py-2 focus:ring-1 focus:ring-primary outline-none transition-all"
+                        value={gridSize.vertical}
+                        onChange={e => setGridSize({ ...gridSize, vertical: Math.max(1, parseInt(e.target.value) || 1) })}
+                        min="1"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+          )}
+
+          {/* Actions */}
+          {imageSrc && (
+            <section className="animate-in slide-in-from-left-4 duration-500 fade-in delay-100">
+              <h2 className="text-sm font-mono uppercase tracking-widest opacity-70 mb-4 flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full"></span> Process
+              </h2>
+              <div className="space-y-3">
+                <Button onClick={handleGenerateSequence} variant="outline" className="w-full justify-start font-mono text-xs h-10 border-primary/20 hover:bg-primary/5 hover:text-primary hover:border-primary">
+                  [A] Generate Sequence
                 </Button>
-                <Button 
-                  onClick={handleCreateGif} 
-                  variant="secondary"
-                  disabled={isCreatingGif}
-                >
-                  {isCreatingGif ? 'Creating GIF...' : 'Create GIF'}
+                <Button onClick={handleCreateGif} disabled={isCreatingGif} variant="outline" className="w-full justify-start font-mono text-xs h-10 border-primary/20 hover:bg-primary/5 hover:text-primary hover:border-primary">
+                  [B] {isCreatingGif ? 'Processing...' : 'Create GIF'}
                 </Button>
-                <Button onClick={handleGenerateAnimation}>
-                  Generate Animation
+                <Button onClick={handleGenerateAnimation} className="w-full justify-start font-mono text-xs h-10 bg-primary text-primary-foreground hover:bg-primary/90">
+                  [C] View Animation
                 </Button>
                 {selectedArea && (
-                  <Button onClick={() => setSelectedArea(null)} variant="destructive">
-                    Clear Selection
+                  <Button onClick={() => setSelectedArea(null)} variant="destructive" className="w-full justify-start font-mono text-xs h-10 opacity-80 hover:opacity-100">
+                    [X] Clear Selection
                   </Button>
                 )}
-              </CardFooter>
-            </Card>
+              </div>
+            </section>
           )}
         </div>
-      </div>
+      </aside>
+
+      {/* Main Workspace */}
+      <main className="flex-1 relative bg-[#1a1a1a] overflow-hidden flex flex-col">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{
+            backgroundImage: `radial-gradient(#ffffff 1px, transparent 1px)`,
+            backgroundSize: '24px 24px'
+          }}>
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 relative flex items-center justify-center p-12 overflow-hidden">
+          {imageSrc ? (
+            <div className="relative max-w-full max-h-full shadow-2xl animate-in zoom-in-95 duration-500 fade-in">
+              <div className="absolute -inset-4 border border-white/5 rounded-lg pointer-events-none"></div>
+              <div className="absolute -inset-1 border border-white/10 rounded-sm pointer-events-none"></div>
+              <ImageCanvas
+                ref={canvasRef}
+                imageSrc={imageSrc}
+                gridSize={gridSize}
+                selectedArea={selectedArea}
+                setSelectedArea={setSelectedArea}
+                onPreviewReady={setPreviewStyle}
+              />
+            </div>
+          ) : (
+            <div className="text-center max-w-2xl relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent blur-3xl -z-10"></div>
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/7/73/The_Horse_in_Motion.jpg"
+                alt="The Horse in Motion"
+                className="w-full rounded-sm opacity-20 mix-blend-overlay mb-8 grayscale contrast-125"
+              />
+              <h2 className="text-4xl font-serif text-white/90 mb-4 tracking-wide">Begin Your Motion Study</h2>
+              <p className="font-mono text-white/50 text-sm max-w-md mx-auto leading-relaxed">
+                Upload a sequential image series to analyze movement patterns, generate frames, and create digital motion loops.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Status Bar / Footer */}
+        <div className="h-12 border-t border-white/10 bg-[#1a1a1a] flex items-center px-6 justify-between text-[10px] font-mono text-white/30 uppercase tracking-widest">
+          <div>System Ready</div>
+          <div>Canvas: {imageSrc ? 'Active' : 'Empty'}</div>
+          <div>v1.0.0</div>
+        </div>
+      </main>
     </div>
   );
 }
