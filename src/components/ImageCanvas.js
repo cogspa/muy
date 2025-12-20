@@ -475,12 +475,29 @@ const ImageCanvas = forwardRef(({ imageSrc, gridSize, selectedArea, setSelectedA
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
-                style={{ cursor: drawMode ? 'crosshair' : 'default' }}
+                onTouchStart={(e) => {
+                    const touch = e.touches[0];
+                    handleMouseDown({
+                        clientX: touch.clientX,
+                        clientY: touch.clientY,
+                        preventDefault: () => e.preventDefault()
+                    });
+                }}
+                onTouchMove={(e) => {
+                    const touch = e.touches[0];
+                    handleMouseMove({
+                        clientX: touch.clientX,
+                        clientY: touch.clientY,
+                        preventDefault: () => e.preventDefault()
+                    });
+                }}
+                onTouchEnd={handleMouseUp}
+                style={{ cursor: drawMode ? 'crosshair' : 'default', touchAction: 'none' }}
                 className="max-w-full h-auto"
             />
 
             {/* Floating Toolbar */}
-            <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute top-4 right-4 flex gap-2 md:opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <button
                     className={`px-3 py-1.5 rounded-sm text-xs font-mono uppercase tracking-wider transition-all ${drawMode
                         ? 'bg-primary text-primary-foreground shadow-lg ring-1 ring-primary/50'

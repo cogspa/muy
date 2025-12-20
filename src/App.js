@@ -4,13 +4,10 @@ import { Button } from './components/ui/button';
 import { Card, CardContent } from './components/ui/card';
 import ImageUploader from './components/ImageUploader';
 import ImageCanvas from './components/ImageCanvas';
-import { Mail, Send, User, MessageSquare } from 'lucide-react';
-// Wait, I don't know if lucide-react is installed. I should check package.json. 
-// If not, I'll stick to text or simple SVGs. 
-// Let's check package.json first. 
-// Actually, I'll just use text for now to be safe, or standard HTML entities.
+import { Mail, Send, User, MessageSquare, Menu, X } from 'lucide-react';
 
 function App() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [imageSrc, setImageSrc] = useState(null);
   const [gridSize, setGridSize] = useState({ horizontal: 3, vertical: 3 });
   const [selectedArea, setSelectedArea] = useState(null);
@@ -59,9 +56,27 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen bg-background text-foreground overflow-hidden font-serif selection:bg-primary selection:text-primary-foreground">
+    <div className="flex flex-col md:flex-row md:h-screen bg-background text-foreground overflow-hidden font-serif selection:bg-primary selection:text-primary-foreground">
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between p-4 border-b border-border bg-card/95 backdrop-blur-sm z-30">
+        <h1 className="text-xl font-bold tracking-widest text-primary font-serif">MUYBRIDGE MACHINE</h1>
+        <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+          {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </Button>
+      </div>
+
       {/* Sidebar Controls */}
-      <aside className="w-96 border-r border-border bg-card/95 backdrop-blur-sm flex flex-col z-20 shadow-2xl transition-all duration-300">
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-10 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      <aside className={`
+        fixed inset-y-0 left-0 w-80 md:relative md:w-96 border-r border-border bg-card/95 backdrop-blur-sm 
+        flex flex-col z-20 shadow-2xl transition-transform duration-300 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
         <div className="p-8 border-b border-border/50">
           <h1 className="text-3xl font-bold tracking-widest text-primary font-serif">MUYBRIDGE<br /><span className="text-xl font-normal opacity-70">MACHINE</span></h1>
           <p className="text-xs font-mono mt-2 opacity-50 uppercase tracking-widest">Est. 2024 • Digital Darkroom</p>
@@ -173,7 +188,7 @@ function App() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 relative flex items-center justify-center p-12 overflow-y-auto">
+        <div className="flex-1 relative flex items-center justify-center p-4 md:p-12 overflow-y-auto">
           {imageSrc ? (
             <div className="relative max-w-full max-h-full shadow-2xl animate-in zoom-in-95 duration-500 fade-in">
               <div className="absolute -inset-4 border border-white/5 rounded-lg pointer-events-none"></div>
@@ -202,7 +217,7 @@ function App() {
 
               <div className="border-t border-white/10 pt-8">
                 <h3 className="text-lg font-serif text-white/70 mb-6 tracking-wide">Inspiration: The Science of Motion</h3>
-                <div className="aspect-video w-1/2 mx-auto rounded-sm overflow-hidden border border-white/10 shadow-2xl bg-black/40">
+                <div className="aspect-video w-full md:w-1/2 mx-auto rounded-sm overflow-hidden border border-white/10 shadow-2xl bg-black/40">
                   <iframe
                     width="100%"
                     height="100%"
@@ -246,7 +261,7 @@ function App() {
                       >
                         <input type="hidden" name="form-name" value="contact" />
                         <div className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <label className="text-xs font-mono text-white/50 uppercase tracking-wider flex items-center gap-2">
                                 <User className="w-3 h-3" /> Name
@@ -309,8 +324,8 @@ function App() {
 
         {/* Status Bar / Footer */}
         <div className="h-12 border-t border-white/10 bg-[#1a1a1a] flex items-center px-6 justify-between text-[10px] font-mono text-white/30 uppercase tracking-widest">
-          <div>System Ready</div>
-          <div>Canvas: {imageSrc ? 'Active' : 'Empty'}</div>
+          <div className="truncate mr-2">System Ready</div>
+          <div className="hidden sm:block">Canvas: {imageSrc ? 'Active' : 'Empty'}</div>
           <div>v1.0.0</div>
         </div>
       </main>
