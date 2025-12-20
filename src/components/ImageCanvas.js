@@ -295,10 +295,15 @@ const ImageCanvas = forwardRef(({ imageSrc, gridSize, selectedArea, setSelectedA
         setIsResizing(false);
 
         // Calculate the grid size (width and height of each rectangle)
-        if (definingBox) {
+        if (definingBox && definingBox.width > 5 && definingBox.height > 5) {
             const gridWidth = definingBox.width / gridSize.horizontal;
             const gridHeight = definingBox.height / gridSize.vertical;
             setGridSizeDisplay({ width: gridWidth, height: gridHeight });
+
+            // Sync with parent state
+            if (setSelectedArea) {
+                setSelectedArea(definingBox);
+            }
         }
     };
 
