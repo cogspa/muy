@@ -109,6 +109,11 @@ function App() {
                 <ImageUploader onImageLoad={handleImageUpload} />
               </CardContent>
             </Card>
+            <div className="mt-4 text-muted-foreground/70 leading-relaxed space-y-2">
+              <p className="font-semibold text-muted-foreground text-lg">Muybridge Machine transforms classic motion study grids into usable animation loops.</p>
+              <p className="text-base">Upload a Muybridge plate (or paste a grid directly on the homepage if you're on desktop), define rows and columns, crop the sequence, and preview the motion instantly.</p>
+              <p className="text-base">Export as a GIF or image sequence for sprite sheets, motion graphics, or After Effects. Created by Joe Micallef. 2026.</p>
+            </div>
           </section>
 
           {/* Animation Preview Section */}
